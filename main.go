@@ -11,6 +11,10 @@ import (
 	"github.com/nevnet99/pokedex-cli/internal/types"
 )
 
+var pokedex = types.Pokedex{
+	Pokemon: make(map[string]types.PokemonResponse),
+}
+
 func main() {
 	cliCommands := make(map[string]types.CliCommand)
 
@@ -58,6 +62,46 @@ func main() {
 
 			return commands.Explore(location)
 		},
+	}
+
+	cliCommands["catch"] = types.CliCommand{
+		Name:        "catch",
+		Description: "Attemps to catch a pokemon",
+		Callback: func(context []string) error {
+			if len(context) == 1 {
+				return errors.New("pokemon parameter is required")
+			}
+
+			pokemon := context[1]
+
+			return commands.Catch(pokemon, pokedex)
+		},
+	}
+
+	{
+		cliCommands["inspect"] = types.CliCommand{
+			Name:        "inspect",
+			Description: "Inspect a pokemon that you have caught with the `catch` command",
+			Callback: func(context []string) error {
+				if len(context) == 1 {
+					return errors.New("pokemon parameter is required")
+				}
+
+				pokemon := context[1]
+
+				return commands.Inspect(pokemon, pokedex)
+			},
+		}
+	}
+
+	{
+		cliCommands["pokedex"] = types.CliCommand{
+			Name:        "pokedex",
+			Description: "List the current pokemon in your pokedex",
+			Callback: func(context []string) error {
+				return commands.PokedexFn(pokedex)
+			},
+		}
 	}
 
 	fmt.Println("Welcome to the Pokedex!")
